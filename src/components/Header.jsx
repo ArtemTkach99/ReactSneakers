@@ -2,7 +2,7 @@ import React from "react";
 
 import { Link } from "react-router-dom";
 
-function Header({ onClickCart }) {
+function Header({ onClickCart, sumAllSneackers }) {
   return (
     <div className="header d-flex justify-between align-center p-40">
       <Link to="/">
@@ -52,7 +52,7 @@ function Header({ onClickCart }) {
               strokeLinejoin="round"
             />
           </svg>
-          <span className="pl-10">1205 uah.</span>
+          <span className="pl-10">{sumAllSneackers()} uah.</span>
         </li>
         <Link to="/favorites">
           <li className="mr-30">

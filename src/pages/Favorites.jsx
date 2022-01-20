@@ -1,11 +1,12 @@
 import React from "react";
 import Card from "../components/Card/index";
 
-export default function Favorites({
-  onAddToCart,
-  onAddToFavorite,
-  favorites = false,
-}) {
+import AppContext from "../context";
+
+export default function Favorites() {
+  const { favorites, onAddToCart, onAddToFavorite } =
+    React.useContext(AppContext);
+
   return (
     <div className="home clear">
       <div className="content p-40">
@@ -17,12 +18,9 @@ export default function Favorites({
           {favorites.map((a, index) => (
             <Card
               key={index}
-              name={a.name}
-              price={a.price}
-              img={a.img}
-              id={a.id}
-              onFavorite={(obj) => onAddToFavorite(obj)}
-              onCart={(obj) => onAddToCart(obj)}
+              {...a}
+              onFavorite={onAddToFavorite}
+              onCart={onAddToCart}
               favorited={true}
             />
           ))}

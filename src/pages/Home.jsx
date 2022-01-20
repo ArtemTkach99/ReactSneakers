@@ -1,34 +1,31 @@
 import React from "react";
 import Card from "../components/Card/index";
+import AppContext from "../context";
 
 export default function Home({
-  items,
-  cartItems,
   onAddToCart,
   searchValue,
   setSearchValue,
   onAddToFavorite,
   onChangeSearchInput,
+  isReady,
 }) {
-  const renderItems = () => {
-    return items
-      .filter((item) =>
-        item.name.toLowerCase().includes(searchValue.toLowerCase())
-      )
+  const { items } = React.useContext(AppContext);
 
-      .map((a, index) => (
-        <Card
-          key={index}
-          name={a.name}
-          price={a.price}
-          img={a.img}
-          id={a.id}
-          onFavorite={(obj) => onAddToFavorite(obj)}
-          onCart={(obj) => onAddToCart(obj)}
-          added={cartItems.some((obj) => Number(obj.id) === Number(a.id))}
-          loading={false}
-        />
-      ));
+  const renderItems = () => {
+    const filteredItems = items.filter((item) =>
+      item.name.toLowerCase().includes(searchValue.toLowerCase())
+    );
+
+    return (isReady ? [...Array(8)] : filteredItems).map((a, index) => (
+      <Card
+        key={index}
+        onFavorite={(obj) => onAddToFavorite(obj)}
+        onCart={(obj) => onAddToCart(obj)}
+        loading={isReady}
+        {...a}
+      />
+    ));
   };
 
   return (
