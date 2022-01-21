@@ -10,21 +10,22 @@ function Card({
   price,
   img,
   id,
+
   onCart,
   onFavorite,
   favorited = false,
   loading = false,
 }) {
   const { isItemAdded } = React.useContext(AppContext);
-
   const [isFavorite, setIsFavorite] = useState(favorited);
+  const itemObj = { name, price, img, id, parentId: id };
 
   const onHandleButton = () => {
-    onCart({ name, price, img, id });
+    onCart(itemObj);
   };
 
   const onHandleHeart = () => {
-    onFavorite({ name, price, img, id });
+    onFavorite(itemObj);
     setIsFavorite(!isFavorite);
   };
 
@@ -48,15 +49,19 @@ function Card({
           </ContentLoader>
         ) : (
           <>
-            <div className={styles.favorite}>
-              <img
-                src={
-                  isFavorite ? "/img/heart-liked.svg" : "/img/heart-unliked.svg"
-                }
-                alt="Unliked"
-                onClick={onHandleHeart}
-              />
-            </div>
+            {onFavorite && (
+              <div className={styles.favorite}>
+                <img
+                  src={
+                    isFavorite
+                      ? "/img/heart-liked.svg"
+                      : "/img/heart-unliked.svg"
+                  }
+                  alt="Unliked"
+                  onClick={onHandleHeart}
+                />
+              </div>
+            )}
             <img width={133} height={112} src={img} alt="" />
             <h5>{name}</h5>
             <div className="d-flex justify-between align-center">
@@ -64,16 +69,18 @@ function Card({
                 <span>Цена:</span>
                 <b>{price} грн.</b>
               </div>
-              <img
-                className={styles.plus}
-                onClick={onHandleButton}
-                src={
-                  isItemAdded(id)
-                    ? "/img/btn-checked.jpg"
-                    : "/img/btn-unchecked.svg"
-                }
-                alt=""
-              />
+              {onCart && (
+                <img
+                  className={styles.plus}
+                  onClick={onHandleButton}
+                  src={
+                    isItemAdded(id)
+                      ? "/img/btn-checked.jpg"
+                      : "/img/btn-unchecked.svg"
+                  }
+                  alt=""
+                />
+              )}
             </div>
           </>
         )}

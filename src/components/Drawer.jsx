@@ -1,16 +1,11 @@
 import axios from "axios";
 import React from "react";
-import AppContext from "../context";
+import { useCart } from "./hooks/useCart";
+
 import Info from "./Info";
 
-function Drawer({
-  cartItems,
-  onClose,
-  removeItem,
-  sumAllSneackers,
-  taxAllSneackers,
-}) {
-  const { setCartItems } = React.useContext(AppContext);
+function Drawer({ onClose, removeItem }) {
+  const { cartItems, setCartItems, totalPrice } = useCart();
   const [orderId, setOrderId] = React.useState(null);
   const [isOrderCompleted, setIsOrderCompleted] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -99,12 +94,12 @@ function Drawer({
                 <li>
                   <span>Итого</span>
                   <div></div>
-                  <b>{sumAllSneackers()} uah.</b>
+                  <b>{totalPrice} uah.</b>
                 </li>
                 <li>
                   <span>Налог 5%</span>
                   <div></div>
-                  <b>{taxAllSneackers(sumAllSneackers())} uah.</b>
+                  <b>{(totalPrice / 100) * 5} uah.</b>
                 </li>
               </ul>
               <button

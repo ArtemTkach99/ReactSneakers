@@ -10,54 +10,85 @@ import AppContext from "./context";
 
 import "./App.css";
 import "./components/style.scss";
+import OrderList from "./pages/OrderList";
 
 function App() {
   const [items, setItems] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [favorites, setFavorites] = useState([]);
+
   const [searchValue, setSearchValue] = useState("");
   const [cartOpened, setCartOpened] = useState(false);
   const [isReady, setIsReady] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
-      const itemsResponse = await axios.get(
-        "https://618254ec84c2020017d89de4.mockapi.io/items"
-      );
+      try {
+        const [itemsResponse, cartResponse, favoritesResponse] =
+          await Promise.all([
+            axios.get("https://618254ec84c2020017d89de4.mockapi.io/items"),
+            axios.get("https://618254ec84c2020017d89de4.mockapi.io/cart"),
+            axios.get("https://618254ec84c2020017d89de4.mockapi.io/favorites"),
+          ]);
 
-      const cartResponse = await axios.get(
-        "https://618254ec84c2020017d89de4.mockapi.io/cart"
-      );
-
-      const favoritesResponse = await axios.get(
-        "https://618254ec84c2020017d89de4.mockapi.io/favorites"
-      );
-      setIsReady(false);
-      setCartItems(cartResponse.data);
-      setFavorites(favoritesResponse.data);
-      setItems(itemsResponse.data);
+        setIsReady(false);
+        setCartItems(cartResponse.data);
+        setFavorites(favoritesResponse.data);
+        setItems(itemsResponse.data);
+      } catch (e) {
+        alert("Ошибка при запросам данных!");
+        console.error(e);
+      }
     }
 
     fetchData();
   }, []);
 
-  const onAddToCart = (obj) => {
-    if (cartItems.find((item) => Number(item.id) === Number(obj.id))) {
-      axios.delete(
-        `https://618254ec84c2020017d89de4.mockapi.io/cart/${obj.id}`
+  const onAddToCart = async (obj) => {
+    try {
+      const findItem = cartItems.find(
+        (item) => Number(item.parentId) === Number(obj.id)
       );
-      setCartItems((prev) =>
-        prev.filter((item) => Number(item.id) !== Number(obj.id))
-      );
-    } else {
-      axios.post("https://618254ec84c2020017d89de4.mockapi.io/cart", obj);
-      setCartItems((prev) => [...prev, obj]);
+      if (findItem) {
+        setCartItems((prev) =>
+          prev.filter((item) => Number(item.parentId) !== Number(obj.id))
+        );
+        await axios.delete(
+          `https://618254ec84c2020017d89de4.mockapi.io/cart/${findItem.id}`
+        );
+      } else {
+        setCartItems((prev) => [...prev, obj]);
+        const { data } = await axios.post(
+          "https://618254ec84c2020017d89de4.mockapi.io/cart",
+          obj
+        );
+
+        setCartItems((prev) =>
+          prev.map((item) => {
+            if (item.parentId === data.parentId) {
+              return {
+                ...item,
+                id: data.id,
+              };
+            }
+            return item;
+          })
+        );
+      }
+    } catch (e) {
+      alert("Не добавился товар в корзину!");
+      console.error(e);
     }
   };
 
   const onRemoveItem = (id) => {
-    axios.delete(`https://618254ec84c2020017d89de4.mockapi.io/cart/${id}`);
-    setCartItems(cartItems.filter((a) => a.id !== id));
+    try {
+      axios.delete(`https://618254ec84c2020017d89de4.mockapi.io/cart/${id}`);
+      setCartItems(cartItems.filter((a) => Number(a.id) !== Number(id)));
+    } catch (e) {
+      alert("Не удалили кросовок!");
+      console.error(e);
+    }
   };
 
   const onAddToFavorite = async (obj) => {
@@ -87,19 +118,8 @@ function App() {
     setSearchValue(e.target.value);
   };
 
-  let sumAllSneackers = () => {
-    let sum = cartItems
-      .map((sneakers) => sneakers.price)
-      .reduce((a, b) => a + b, 0);
-    return sum;
-  };
-
-  let taxAllSneackers = (sum) => {
-    return (sum / 100) * 5;
-  };
-
   let isItemAdded = (id) => {
-    return cartItems.some((obj) => Number(obj.id) === Number(id));
+    return cartItems.some((obj) => Number(obj.parentId) === Number(id));
   };
 
   return (
@@ -118,18 +138,12 @@ function App() {
       <div className="home clear">
         {cartOpened ? (
           <Drawer
-            cartItems={cartItems}
-            // onClose={() => setCartOpened(false)}
+            onClose={() => setCartOpened(false)}
             removeItem={onRemoveItem}
-            sumAllSneackers={sumAllSneackers}
-            taxAllSneackers={taxAllSneackers}
           />
         ) : null}
 
-        <Header
-          onClickCart={() => setCartOpened(true)}
-          sumAllSneackers={sumAllSneackers}
-        />
+        <Header onClickCart={() => setCartOpened(true)} />
 
         <Routes>
           <Route
@@ -147,6 +161,7 @@ function App() {
             }
           />
           <Route path="/favorites" exact element={<Favorites />} />
+          <Route path="/order" exact element={<OrderList />} />
         </Routes>
       </div>
     </AppContext.Provider>
