@@ -100,14 +100,12 @@ function App() {
         setFavorites((prev) =>
           prev.filter((a) => Number(a.id) !== Number(obj.id))
         );
-        alert("Удалили лайк");
       } else {
         const { data } = await axios.post(
           "https://618254ec84c2020017d89de4.mockapi.io/favorites/",
           obj
         );
         setFavorites((prev) => [...prev, data]);
-        alert("Add лайк");
       }
     } catch (error) {
       alert("Не удалось добавить в фавориты");
