@@ -70,7 +70,6 @@ function Drawer({ onClose, removeItem }) {
                     className="cartItem d-flex align-center mb-20"
                     key={a.id}
                   >
-                    {console.log(a.id)}
                     <div
                       style={{ backgroundImage: `url(${a.img})` }}
                       className="cartItemImg"
